@@ -1,19 +1,20 @@
 #queryCheesecakeFactoryGraph.R
 library(RNeo4j);
 
-graph = startGraph("http://localhost:7474/db/data/");
+#graph = startGraph("http://localhost:7474/db/data/");
 
 getMenuItemNode <- function(graph, itemName){
-  getLabeledNodes(graph, "MenuItem", name = itemName);
+  getLabeledNodes(graph, "MenuItem", name = itemName)[[1]];
 }
 
 getFeatureNode <- function(graph, featureName){
-  getLabeledNodes(graph, "Feature", name = featureName);
+  getLabeledNodes(graph, "Feature", name = featureName)[[1]];
 }
 
 getMaxSessionId <- function(graph){
   query <- "MATCH (n:Session) RETURN MAX(n.id) as max_id"
-  results<-as.integer(cypher(graph, query));  
+  count<-as.integer(cypher(graph, query))
+  results<- if(is.na(count)) 0 else count; 
 }
 
 createSession <- function(graph){
@@ -69,10 +70,20 @@ getMenuItemDifference <- function(graph, name1, name2){
   features1$name[features1$name %nin% features2$name];
 }
 
-#Need function here to create relationship between session and unchosen 
-#features nodes, with property of -1 each time it is chosen against
+saveChoiceToSession <- function(graph, sessionNode, itemName){
+    itemNode <- getMenuItemNode(graph, itemName);
+    createRel(sessionNode, "MADE_CHOICE", itemNode, 
+              id=getSessionChoicesCount(graph, sessionNode)+1);
+}
 
+getSessionChoicesCount <- function(graph, sessionNode){
+  choices <- outgoingRels(sessionNode, "MADE_CHOICE");
+  if (is.null(choices)) 0 else length(choices);
+}
+
+#---------Test run
 #Initialize on 2 random menu items
+session <- createSession(graph);
 options<-getRandomMenuItemNames(graph,2);
 
 for (i in 1:10) {
@@ -80,6 +91,7 @@ for (i in 1:10) {
   choice<-options[readline(paste("Please select either (1) ",options[1,], 
                                   " or (2) ", options[2,], ": ", sep="")),];
   print(paste("Choice is ",choice, sep=""));
+  saveChoiceToSession(graph, session, choice);
   nonChoice<-options[options!=choice];
   print(paste("Choice is not ",nonChoice, sep=""));
   nonChosenFeatures<-getMenuItemDifference(graph, nonChoice, choice);

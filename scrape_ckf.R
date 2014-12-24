@@ -30,6 +30,10 @@ getMenuItems <- function(url){
   #Remove cutoff words at end of sentences
   ckf_items$description<-str_replace_all(ckf_items$description,"\\s+\\w*\\W+$","")
   
+  #Remove other weird characters from title and descriptions (Only for testing!)
+  ckf_items$name<-str_replace_all(ckf_items$name,"[^[:alnum:]^[:space:]]","");
+  ckf_items$description<-str_replace_all(ckf_items$description,"[^[:alnum:]^[:space:]]","");
+  
   #Remove duplicate records
   ckf_items<-unique(ckf_items);
   ckf_items;
