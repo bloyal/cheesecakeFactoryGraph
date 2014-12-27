@@ -81,11 +81,37 @@ getSessionChoicesCount <- function(graph, sessionNode){
   if (is.null(choices)) 0 else length(choices);
 }
 
-#---------Test run
+assignFeaturePreferenceToSession <- function(graph, sessionNode, featureName, incrementValue){
+  #featureNode <- getFeatureNode(graph, featureName);
+  query <- paste(
+    "MATCH (s:Session {id:", sessionNode$id, "}), (f:Feature {name:'", featureName, "''}) ", 
+    "MERGE (s) -[r:HAS_AFFINITY_FOR]-> (f) ",
+    "ON CREATE SET r.score = ", incrementValue, " ",
+    "ON MATCH ET r.score = r.score + ", incrementValue,
+    sep="");
+  print(query);
+  cypher(graph, query);  
+}
+
+addOrIncrementList <- function(elements, list, incrementValue){ 
+  '%nin%' <- Negate('%in%');
+  for (i in 1:length(elements)){
+    #check if element is in list
+    if (elements[i] %nin% names(list)){
+      list[[elements[i]]] <- incrementValue;
+    }
+    else {
+      list[[elements[i]]] <- list[[elements[i]]] + incrementValue;
+    }
+  }
+  list;
+}
+
+#---------Test run--------
 #Initialize on 2 random menu items
 session <- createSession(graph);
 options<-getRandomMenuItemNames(graph,2);
-
+featureScores <- list();
 for (i in 1:10) {
   #Select between 2 menu items
   choice<-options[readline(paste("Please select either (1) ",options[1,], 
@@ -94,7 +120,12 @@ for (i in 1:10) {
   saveChoiceToSession(graph, session, choice);
   nonChoice<-options[options!=choice];
   print(paste("Choice is not ",nonChoice, sep=""));
+  
+  chosenFeatures<-getMenuItemDifference(graph, choice, nonChoice);
+  featureScores<-addOrIncrementList(chosenFeatures, featureScores, 1)
+  
   nonChosenFeatures<-getMenuItemDifference(graph, nonChoice, choice);
-  print(nonChosenFeatures);
+  featureScores<-addOrIncrementList(nonChosenFeatures, featureScores, -1)
+  
   options<-getSomeRelatedMenuItemNames(graph, choice, 2);
 }
