@@ -82,12 +82,11 @@ getSessionChoicesCount <- function(graph, sessionNode){
 }
 
 assignFeaturePreferenceToSession <- function(graph, sessionNode, featureName, incrementValue){
-  #featureNode <- getFeatureNode(graph, featureName);
   query <- paste(
-    "MATCH (s:Session {id:", sessionNode$id, "}), (f:Feature {name:'", featureName, "''}) ", 
+    "MATCH (s:Session {id:", sessionNode$id, "}), (f:Feature {name:'", featureName, "'}) ", 
     "MERGE (s) -[r:HAS_AFFINITY_FOR]-> (f) ",
     "ON CREATE SET r.score = ", incrementValue, " ",
-    "ON MATCH ET r.score = r.score + ", incrementValue,
+    "ON MATCH SET r.score = r.score + ", incrementValue,
     sep="");
   print(query);
   cypher(graph, query);  
