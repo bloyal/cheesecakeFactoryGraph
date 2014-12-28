@@ -21,6 +21,10 @@ createSession <- function(graph){
   node <- createNode(graph, "Session", id = getMaxSessionId(graph)+1)
 }
 
+getSessionNode <- function(graph, sessionId){
+  getLabeledNodes(graph, "Session", id = sessionId);
+}
+
 getFeatureNamesForMenuItem <- function(graph, itemName){
   query <- "MATCH (a:MenuItem {name:{name}})-[r:HAS_FEATURE]->(b:Feature)
             RETURN DISTINCT b.name
