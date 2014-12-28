@@ -88,8 +88,12 @@ assignFeaturePreferenceToSession <- function(graph, sessionNode, featureName, in
     "ON CREATE SET r.score = ", incrementValue, " ",
     "ON MATCH SET r.score = r.score + ", incrementValue,
     sep="");
-  print(query);
+  print(paste("Adjusting affinity score of ", featureName, " by ", incrementValue), sep="");
   cypher(graph, query);  
+}
+
+assignMultipleFeaturePreferencesToSession <- function(graph, session, features, incrementValue){
+  sapply(features, function(feature) assignFeaturePreferenceToSession(graph, session, feature, incrementValue))  
 }
 
 addOrIncrementList <- function(elements, list, incrementValue){ 
@@ -104,27 +108,4 @@ addOrIncrementList <- function(elements, list, incrementValue){
     }
   }
   list;
-}
-
-#---------Test run--------
-#Initialize on 2 random menu items
-session <- createSession(graph);
-options<-getRandomMenuItemNames(graph,2);
-featureScores <- list();
-for (i in 1:10) {
-  #Select between 2 menu items
-  choice<-options[readline(paste("Please select either (1) ",options[1,], 
-                                  " or (2) ", options[2,], ": ", sep="")),];
-  print(paste("Choice is ",choice, sep=""));
-  saveChoiceToSession(graph, session, choice);
-  nonChoice<-options[options!=choice];
-  print(paste("Choice is not ",nonChoice, sep=""));
-  
-  chosenFeatures<-getMenuItemDifference(graph, choice, nonChoice);
-  featureScores<-addOrIncrementList(chosenFeatures, featureScores, 1)
-  
-  nonChosenFeatures<-getMenuItemDifference(graph, nonChoice, choice);
-  featureScores<-addOrIncrementList(nonChosenFeatures, featureScores, -1)
-  
-  options<-getSomeRelatedMenuItemNames(graph, choice, 2);
 }
