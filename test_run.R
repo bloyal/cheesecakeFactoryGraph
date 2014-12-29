@@ -1,12 +1,12 @@
 #Test Run
 source("~/GitHub/cheesecakeFactoryGraph/queryCheesecakeFactoryGraph.R");
-
+source("~/GitHub/cheesecakeFactoryGraph/get_high_scoring_options.R");
 
 #---------Test run--------
 #Initialize on 2 random menu items
 testRun <- function(graph){
   session <- createSession(graph);
-  print(session$id);
+  print(paste("Starting Session ",session$id, sep=""));
   options<-getRandomMenuItemNames(graph,2);
   featureScores <- list();
   for (i in 1:10) {
@@ -30,6 +30,9 @@ testRun <- function(graph){
     #Use this option to store preference scores in database
     assignMultipleFeaturePreferencesToSession(graph, session, nonChosenFeatures, -1)
     
-    options<-getSomeRelatedMenuItemNames(graph, choice, 2);
+     if (i < 4) {options <- getSomeRelatedMenuItemNames(graph, choice, 2);}
+     else {options <- getHighScoringOptions(graph, session, choice, 2);}
+    
+#    options <- getHighScoringOptions(graph, session, choice, 2);
   }
 }
