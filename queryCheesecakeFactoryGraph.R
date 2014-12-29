@@ -74,17 +74,37 @@ getMenuItemDifference <- function(graph, name1, name2){
   features1$name[features1$name %nin% features2$name];
 }
 
+#Create direct link between the session node and every choice - decided not to go this route
 saveChoiceToSession <- function(graph, sessionNode, itemName){
     itemNode <- getMenuItemNode(graph, itemName);
     createRel(sessionNode, "MADE_CHOICE", itemNode, 
               id=getSessionChoicesCount(graph, sessionNode)+1);
 }
-
 getSessionChoicesCount <- function(graph, sessionNode){
   choices <- outgoingRels(sessionNode, "MADE_CHOICE");
   if (is.null(choices)) 0 else length(choices);
 }
 
+#Create path that starts with session node and travels through each choice in order. Also
+#creates a "FINAL_CHOICE" relationship between the session node and the last choice to make
+#reporting easier
+saveChoicePathToSession <- function(graph, sessionNode, choiceIteration, previousChoice, choice) {
+  if(choiceIteration==1) {
+    choiceNode <- getMenuItemNode(graph, choice);
+    createRel(sessionNode, "MADE_CHOICE", choiceNode, id=1);
+    createRel(sessionNode, "LAST_CHOICE", choiceNode);
+  }
+  else {
+    choiceNode <- getMenuItemNode(graph, choice);
+    previousChoiceNode <- getMenuItemNode(graph, previousChoice);
+    createRel(previousChoiceNode, "MADE_CHOICE", choiceNode, id=choiceIteration);
+    
+    lastChoiceQuery <- "MATCH (s:Session {id:{id}})-[r:LAST_CHOICE]->() RETURN r";
+    rel = getSingleRel(graph, lastChoiceQuery, id=sessionNode$id);
+    delete(rel);
+    createRel(sessionNode, "LAST_CHOICE", choiceNode, session_id=sessionNode$id);
+  }
+}
 assignFeaturePreferenceToSession <- function(graph, sessionNode, featureName, incrementValue){
   query <- paste(
     "MATCH (s:Session {id:", sessionNode$id, "}), (f:Feature {name:'", featureName, "'}) ", 
@@ -92,7 +112,6 @@ assignFeaturePreferenceToSession <- function(graph, sessionNode, featureName, in
     "ON CREATE SET r.score = ", incrementValue, " ",
     "ON MATCH SET r.score = r.score + ", incrementValue,
     sep="");
-  print(paste("Adjusting affinity score of ", featureName, " by ", incrementValue), sep="");
   cypher(graph, query);  
 }
 

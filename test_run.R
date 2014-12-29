@@ -9,12 +9,18 @@ testRun <- function(graph){
   print(paste("Starting Session ",session$id, sep=""));
   options<-getRandomMenuItemNames(graph,2);
   featureScores <- list();
-  for (i in 1:10) {
-    #Select between 2 menu items
+  choice <- list();
+  for (i in 1:5) {
+    #Save previous choice
+    previousChoice <- choice;
+
     choice<-options[readline(paste("Please select either (1) ",options[1,], 
                                    " or (2) ", options[2,], ": ", sep="")),];
     print(paste("Choice is ",choice, sep=""));
-    saveChoiceToSession(graph, session, choice);
+    
+    #saveChoiceToSession(graph, session, choice);
+    saveChoicePathToSession(graph, session, i, previousChoice, choice);
+    
     nonChoice<-options[options!=choice];
     print(paste("Choice is not ",nonChoice, sep=""));
     
