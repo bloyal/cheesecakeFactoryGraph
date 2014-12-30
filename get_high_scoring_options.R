@@ -23,11 +23,27 @@ getHighScoringOptions <- function(graph, session, itemName, maxItems = 2){
 # RETURN c.name as item_name, c.description, sum(r2.strength) as feature_strength, sum(r.score) as affinity_score
 # ORDER BY affinity_score desc, c.name
 
+#Calculate normalized feature scores
+# MATCH (s:Session {id:2})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+# WITH s, max(abs(r.score)) as max_score
+# MATCH (s:Session {id:2})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+# RETURN s.id as session_id, f.name as feature, r.score / max_score as norm_score
+# order by norm_score desc
 
-#get affinity scores
+#get raw affinity scores
 # match (s:Session {id:8})-[r:HAS_AFFINITY_FOR]->(f:Feature)
-# return s.id as session_id, r.score as affinity_score, f.name as feature_name
+# return s.id as session_id, f.name as feature_name, r.score as affinity_score
 # order by r.score desc
+
+#----------This is the big one, but need to figure out how to deal with cases where
+# a menu item has a couple of perfect matches, but a lot of unknowns
+# MATCH (s:Session {id:2})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+# WITH s, max(abs(r.score)) as max_score
+# MATCH (s)-[r:HAS_AFFINITY_FOR]->(f:Feature)
+# WITH s, f, r.score / max_score as norm_score
+# MATCH (f)<--(m:MenuItem)
+# RETURN s.id, m.name, (sum((norm_score-1)^2) / count(f.name)) as mse
+# order by mse
 
 #Get list of menu items, ranked by affinity score:
 # MATCH (f:Feature)<--(c:MenuItem),
