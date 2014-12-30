@@ -23,5 +23,10 @@ buildCheesecakeFactoryGraph <-function(){
                            rep("MenuItem",3184), rep("name",3184), features$item,
                            rep("Feature",3184), rep("name",3184), features$feature,
                            rep("HAS_FEATURE",3184));
+  
+  bulkUpdateRelProperties(graph, 
+                          rep("MenuItem",3184), rep("name",3184), features$item,
+                          rep("Feature",3184), rep("name",3184), features$feature, 
+                          rep("HAS_FEATURE",3184), rep("strength",3184), rep(1,3184));
   graph;
 }

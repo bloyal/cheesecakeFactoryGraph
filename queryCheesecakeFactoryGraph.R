@@ -1,7 +1,7 @@
 #queryCheesecakeFactoryGraph.R
 library(RNeo4j);
 
-#graph = startGraph("http://localhost:7474/db/data/");
+graph = startGraph("http://localhost:7474/db/data/");
 
 getMenuItemNode <- function(graph, itemName){
   getLabeledNodes(graph, "MenuItem", name = itemName)[[1]];

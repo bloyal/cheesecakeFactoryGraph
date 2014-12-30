@@ -22,7 +22,7 @@ testRun <- function(graph){
     saveChoicePathToSession(graph, session, i, previousChoice, choice);
     
     nonChoice<-options[options!=choice];
-    print(paste("Choice is not ",nonChoice, sep=""));
+    #print(paste("Choice is not ",nonChoice, sep=""));
     
     chosenFeatures<-getMenuItemDifference(graph, choice, nonChoice);
     #Use this option to store preference scores in memory

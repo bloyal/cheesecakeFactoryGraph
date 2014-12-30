@@ -68,3 +68,27 @@ bulkCreateRelationships<-function(graph,
   }
   commit(t);
 }
+
+bulkUpdateRelProperties<-function(graph, 
+                                  startLabel, startIndexName, startIndexValue, 
+                                  endLabel, endIndexName, endIndexValue,
+                                  relationshipType, propertyName, propertyValue){
+  relInfo <- cbind(startLabel, startIndexName, startIndexValue,
+                   endLabel, endIndexName, endIndexValue,
+                   relationshipType,propertyName, propertyValue);
+  t <- newTransaction(graph);
+  for (i in 1:nrow(relInfo)){
+    query <- paste("MATCH (a:", relInfo[i,"startLabel"]," {", relInfo[i,"startIndexName"], ":'", relInfo[i,"startIndexValue"], "'})",
+                   "-[r:",relInfo[i,"relationshipType"],"]->",
+                    "(b:", relInfo[i,"endLabel"]," {", relInfo[i,"endIndexName"], ":'", relInfo[i,"endIndexValue"], "'}) ",
+                   "SET r.",relInfo[i,"propertyName"],"=",relInfo[i,"propertyValue"], "",sep="");
+    if (i==1) {print(query)}
+    appendCypher(t, query);
+  }
+  commit(t);
+}
+# 
+# bulkUpdateRelProperties(graph, 
+#                         rep("Test",3), rep("id",3), c(1,2,3), 
+#                         rep("Test",3), rep("id",3), c(2,3,1), 
+#                         rep("LINK",3), rep("value",3), rep(1,3))

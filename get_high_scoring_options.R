@@ -1,7 +1,7 @@
 #get high scoring options related to a node
 
 getHighScoringOptions <- function(graph, session, itemName, maxItems = 2){
-  print(paste("Item Name is ",itemName,sep=""))
+  #print(paste("Item Name is ",itemName,sep=""))
   query <- paste("MATCH (a:MenuItem {name:{name}})-->(f:Feature)<--(c:MenuItem),
     (s:Session {id:", session$id, "})-[r:HAS_AFFINITY_FOR]->(f)
     WITH a.name as choice_name, c.name as related_item_name, sum(r.score) as affinity_score
@@ -15,6 +15,14 @@ getHighScoringOptions <- function(graph, session, itemName, maxItems = 2){
   names(results)<-c("name");
   results;
 }
+
+#---start here
+#This is an interesting query - will probably need something like this to normalize affinities
+# MATCH (f:Feature)<-[r2:HAS_FEATURE]-(c:MenuItem),
+# (s:Session {id:1})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+# RETURN c.name as item_name, c.description, sum(r2.strength) as feature_strength, sum(r.score) as affinity_score
+# ORDER BY affinity_score desc, c.name
+
 
 #get affinity scores
 # match (s:Session {id:8})-[r:HAS_AFFINITY_FOR]->(f:Feature)
