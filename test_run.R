@@ -10,10 +10,10 @@ testRun <- function(graph){
   options<-getRandomMenuItemNames(graph,2);
   featureScores <- list();
   choice <- list();
-  for (i in 1:5) {
+  for (i in 1:10) {
+    print(paste("Cycle ",i,sep=""));
     #Save previous choice
     previousChoice <- choice;
-
     choice<-options[readline(paste("Please select either (1) ",options[1,], 
                                    " or (2) ", options[2,], ": ", sep="")),];
     print(paste("Choice is ",choice, sep=""));
@@ -36,9 +36,17 @@ testRun <- function(graph){
     #Use this option to store preference scores in database
     assignMultipleFeaturePreferencesToSession(graph, session, nonChosenFeatures, -1)
     
-     if (i < 4) {options <- getSomeRelatedMenuItemNames(graph, choice, 2);}
-     else {options <- getHighScoringOptions(graph, session, choice, 2);}
+#      if (i < 4) {options <- getSomeRelatedMenuItemNames(graph, choice, 2);}
+#      else {options <- getHighScoringOptions(graph, session, choice, 2);}
     
 #    options <- getHighScoringOptions(graph, session, choice, 2);
+    print("Top Features are:");
+    print (getTopFeatureInfo(graph, session));
+
+    print("Top Options are:");
+    print (getTopOptionInfo(graph, session, 5));
+
+    options <- getLowMSEOptions(graph, session, 2);
+
   }
 }

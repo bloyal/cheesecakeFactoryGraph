@@ -16,6 +16,47 @@ getHighScoringOptions <- function(graph, session, itemName, maxItems = 2){
   results;
 }
 
+getLowMSEOptions <- function(graph, session, maxItems = 2){
+  #print(paste("Item Name is ",itemName,sep=""))
+  query <- paste("MATCH (s:Session {id:{sessionId}})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+                  WITH s, max(abs(r.score)) as max_score
+                  MATCH (s)-[r:HAS_AFFINITY_FOR]->(f:Feature)
+                  WITH s, f, r.score / max_score as norm_score
+                  MATCH (s)-[:LAST_CHOICE]->(:MenuItem)-->(f)<--(m:MenuItem)
+                  WITH m.name as menuItem, (sum((norm_score-1)^2) / count(f.name)) as mse
+                  WITH menuItem, mse, rand() as rand
+                  RETURN menuItem
+                  ORDER by mse, rand
+                  LIMIT ", maxItems, sep="");
+  results<-cypher(graph, query, sessionId=session$id);  
+  names(results)<-c("name");
+  results;
+}
+
+getTopOptionInfo <- function(graph, session, maxItems=5){
+  query<-paste("MATCH (s:Session {id:{sessionId}})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+                WITH s, max(abs(r.score)) as max_score
+                MATCH (s)-[r:HAS_AFFINITY_FOR]->(f:Feature)
+                WITH s, f, r.score / max_score as norm_score
+                MATCH (s)-[:LAST_CHOICE]->(:MenuItem)-->(f)<--(m:MenuItem)
+                RETURN m.name as menuItem, (sum((norm_score-1)^2) / count(f.name)) as mse
+                ORDER by mse
+                LIMIT ", maxItems, sep="");
+  results<-cypher(graph, query, sessionId=session$id);  
+  results;
+}
+
+getTopFeatureInfo <- function(graph, session, maxItems=5){
+  query<-paste("MATCH (s:Session {id:{sessionId}})-[r:HAS_AFFINITY_FOR]->(f:Feature)
+                WITH s, max(abs(r.score)) as max_score
+                MATCH (s)-[r:HAS_AFFINITY_FOR]->(f:Feature)
+                RETURN f.name as feature_name, r.score / max_score as norm_score
+                ORDER by norm_score desc
+                LIMIT ", maxItems, sep="");
+  
+  results<-cypher(graph, query, sessionId=session$id);  
+  results;
+}
 #---start here
 #This is an interesting query - will probably need something like this to normalize affinities
 # MATCH (f:Feature)<-[r2:HAS_FEATURE]-(c:MenuItem),
@@ -41,7 +82,7 @@ getHighScoringOptions <- function(graph, session, itemName, maxItems = 2){
 # WITH s, max(abs(r.score)) as max_score
 # MATCH (s)-[r:HAS_AFFINITY_FOR]->(f:Feature)
 # WITH s, f, r.score / max_score as norm_score
-# MATCH (f)<--(m:MenuItem)
+# MATCH (:MenuItem {name:"Grilled Pork Chop"})-->(f)<--(m:MenuItem)
 # RETURN s.id, m.name, (sum((norm_score-1)^2) / count(f.name)) as mse
 # order by mse
 
