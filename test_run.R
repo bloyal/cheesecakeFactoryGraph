@@ -1,6 +1,7 @@
 #Test Run
 source("~/GitHub/cheesecakeFactoryGraph/queryCheesecakeFactoryGraph.R");
 source("~/GitHub/cheesecakeFactoryGraph/get_high_scoring_options.R");
+source("~/GitHub/cheesecakeFactoryGraph/solutionCheck.R");
 
 #---------Test run--------
 #Initialize on 2 random menu items
@@ -10,6 +11,9 @@ testRun <- function(graph){
   options<-getRandomMenuItemNames(graph,2);
   featureScores <- list();
   choice <- list();
+  topTenScoreData<-data.frame();
+  topTenMSEData<-data.frame();
+  solutionCheck <- FALSE;
   for (i in 1:10) {
     print(paste("Cycle ",i,sep=""));
     #Save previous choice
@@ -41,7 +45,9 @@ testRun <- function(graph){
     
 #    options <- getHighScoringOptions(graph, session, choice, 2);
 
-    topOptions <- getTopOptionInfo(graph, session, 5)
+    topOptions <- getTopOptionInfo(graph, session, 10);
+    topTenScoreData <- rbind(topTenScoreData, topOptions$score);
+    topTenMSEData <- rbind(topTenMSEData, topOptions$mse);
 
     print("Top Features are:");
     print (getTopFeatureInfo(graph, session));
@@ -49,7 +55,10 @@ testRun <- function(graph){
     print("Top Options are:");
     print(topOptions);
 
+    solutionCheck <- doesValidSolutionExist(topOptions, i);
+
     #options <- getLowMSEOptions(graph, session, 2);
     options <- data.frame(topOptions[1:2,"menuItem"]);
   }
+list("topTenScoreData"=topTenScoreData, "topTenMSEData"=topTenMSEData);
 }
