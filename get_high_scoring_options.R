@@ -40,7 +40,7 @@ getTopOptionInfo <- function(graph, session, maxItems=5){
                 WITH s, f, r.score / max_score as norm_score
                 MATCH (s)-[:LAST_CHOICE]->(:MenuItem)-->(f)<-[a:HAS_FEATURE]-(m:MenuItem)
                 WITH m.name as menuItem, sum(norm_score*a.strength) as score, 
-                (sum((norm_score-1)^2) / count(f.name)) as mse
+                (sum((norm_score-a.strength)^2) / count(f.name)) as mse
                 WITH menuItem, score, mse, rand() as rand
                 RETURN menuItem, score, mse, rand
                 ORDER by score desc, mse, rand
