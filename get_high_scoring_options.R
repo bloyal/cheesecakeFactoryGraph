@@ -43,7 +43,7 @@ getTopOptionInfo <- function(graph, session, maxItems=5){
                 (sum((norm_score-1)^2) / count(f.name)) as mse
                 WITH menuItem, score, mse, rand() as rand
                 RETURN menuItem, score, mse, rand
-                ORDER by score desc, rand
+                ORDER by score desc, mse, rand
                LIMIT ", maxItems, sep="");
   results<-cypher(graph, query, sessionId=session$id);  
   results;
