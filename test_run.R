@@ -14,12 +14,16 @@ testRun <- function(graph){
   topTenScoreData<-data.frame();
   topTenMSEData<-data.frame();
   solutionCheck <- FALSE;
-  for (i in 1:10) {
+  i<-0;
+#   for (i in 1:10) {
+  while (solutionCheck == FALSE) {
+    i<-i+1;
     print(paste("Cycle ",i,sep=""));
     #Save previous choice
     previousChoice <- choice;
-    choice<-options[readline(paste("Please select either (1) ",options[1,], 
-                                   " or (2) ", options[2,], ": ", sep="")),];
+#-----Add something here about descriptions-------
+    choice<-options[readline(paste("Please select either: \n(1) ",options[1,], 
+                                   "\nor (2) ", options[2,], ": ", sep="")),];
     print(paste("Choice is ",choice, sep=""));
     
     #saveChoiceToSession(graph, session, choice);
@@ -50,15 +54,16 @@ testRun <- function(graph){
     topTenMSEData <- rbind(topTenMSEData, topOptions$mse);
 
     print("Top Features are:");
-    print (getTopFeatureInfo(graph, session));
+    print (getTopFeatureInfo(graph, session, 10));
 
     print("Top Options are:");
-    print(topOptions);
+    print(topOptions[1:5,]);
 
     solutionCheck <- doesValidSolutionExist(topOptions, i);
 
     #options <- getLowMSEOptions(graph, session, 2);
     options <- data.frame(topOptions[1:2,"menuItem"]);
   }
-list("topTenScoreData"=topTenScoreData, "topTenMSEData"=topTenMSEData);
+print(paste("May we suggest ", topOptions[1,"menuItem"], "?", sep=""))
+#list("topTenScoreData"=topTenScoreData, "topTenMSEData"=topTenMSEData);
 }
