@@ -38,10 +38,13 @@ getTopOptionInfo <- function(graph, session, maxItems=5){
                 WITH s, max(abs(r.score)) as max_score
                 MATCH (s)-[r:HAS_AFFINITY_FOR]->(f:Feature)
                 WITH s, f, r.score / max_score as norm_score
-                MATCH (s)-[:LAST_CHOICE]->(:MenuItem)-->(f)<--(m:MenuItem)
-                RETURN m.name as menuItem, (sum((norm_score-1)^2) / count(f.name)) as mse
-                ORDER by mse
-                LIMIT ", maxItems, sep="");
+                MATCH (s)-[:LAST_CHOICE]->(:MenuItem)-->(f)<-[a:HAS_FEATURE]-(m:MenuItem)
+                WITH m.name as menuItem, sum(norm_score*a.strength) as score, 
+                (sum((norm_score-1)^2) / count(f.name)) as mse
+                WITH menuItem, score, mse, rand() as rand
+                RETURN menuItem, score, mse, rand
+                ORDER by score desc, rand
+               LIMIT ", maxItems, sep="");
   results<-cypher(graph, query, sessionId=session$id);  
   results;
 }

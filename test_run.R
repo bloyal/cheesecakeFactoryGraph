@@ -36,17 +36,20 @@ testRun <- function(graph){
     #Use this option to store preference scores in database
     assignMultipleFeaturePreferencesToSession(graph, session, nonChosenFeatures, -1)
     
-#      if (i < 4) {options <- getSomeRelatedMenuItemNames(graph, choice, 2);}
+      if (i < 4) {options <- getSomeRelatedMenuItemNames(graph, choice, 2);}
 #      else {options <- getHighScoringOptions(graph, session, choice, 2);}
     
 #    options <- getHighScoringOptions(graph, session, choice, 2);
+
+    topOptions <- getTopOptionInfo(graph, session, 5)
+
     print("Top Features are:");
     print (getTopFeatureInfo(graph, session));
 
     print("Top Options are:");
-    print (getTopOptionInfo(graph, session, 5));
+    print(topOptions);
 
-    options <- getLowMSEOptions(graph, session, 2);
-
+    #options <- getLowMSEOptions(graph, session, 2);
+    options <- data.frame(topOptions[1:2,"menuItem"]);
   }
 }
